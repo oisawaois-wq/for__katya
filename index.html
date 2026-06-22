@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Для любимой Кати</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       overflow: hidden;
-      background: #ffffff; /* Чистый белый фон */
+      background: #ffffff;
       font-family: sans-serif;
       touch-action: none;
     }
@@ -48,13 +48,13 @@
 
   <div id="3d-container"></div>
   
-  <div class="hint">Проведи пальцем или курсором по сердцу</div>
+  <div class="hint">Проведи пальцем по сердцу</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <script>
-    /* === 1. СПИСОК ИЗ 52 КОМПЛИМЕНТОВ === */
+    /* === 1. СПИСОК КОМПЛИМЕНТОВ === */
     const complimentWords = [
       "Ты самая милая", "Ты самая красивая", "Моя вселенная", "Любимая", "Невероятная", 
       "Улыбнись, тебе идет", "Самая нежная", "Очаровательная", "Моё счастье", "Восхитительная",
@@ -65,7 +65,7 @@
       "Ты мое всё", "Ласковая", "Незабываемая", "Свет моих очей", "Ты манишь меня",
       "Самая стильная", "Головокружительная", "Ты милашка", "Моя гордость", "Счастье быть с тобой",
       "Ты идеальна", "Самая чуткая", "Колдовские глаза", "Ты мой уют", "Бесценная",
-      "Ты сияешь", "Серце бьется ради тебя", "Сказочная", "Моя муза", "Ты даришь крылья",
+      "Ты сияешь", "Сердце бьется ради тебя", "Сказочная", "Моя муза", "Ты даришь крылья",
       "Самая-самая", "Люблю тебя без ума"
     ];
 
@@ -83,24 +83,30 @@
 
     function createCompliment(isInitial = false) {
       const text = complimentWords[Math.floor(Math.random() * complimentWords.length)];
-      const fontSize = window.innerWidth < 600 ? Math.floor(16 + Math.random() * 8) : Math.floor(22 + Math.random() * 12);
+      // Чуть уменьшили шрифт для красивого аккуратного заднего плана
+      const fontSize = window.innerWidth < 600 ? Math.floor(13 + Math.random() * 5) : Math.floor(18 + Math.random() * 8);
       
       return {
         text: text,
         x: Math.random() * compCanvas.width,
         y: isInitial ? Math.random() * compCanvas.height : -50,
         speed: 0.35 + Math.random() * 0.5,
-        alpha: 0.15 + Math.random() * 0.25,
-        font: `${fontSize}px 'Great Vibes', cursive`,
+        alpha: 0.12 + Math.random() * 0.22, // Мягкая прозрачность, чтобы не перебивать сердце
+        font: `${fontSize}px 'Pacifico', cursive`, // Теперь комплименты ТОЖЕ рукописные!
         waveSpeed: 0.008 + Math.random() * 0.01,
         waveAngle: Math.random() * Math.PI * 2,
         waveRange: 8 + Math.random() * 12
       };
     }
 
-    for(let i = 0; i < 38; i++) {
-      compliments.push(createCompliment(true));
-    }
+    // Ждем полной загрузки красивого шрифта перед стартом анимации заднего фона
+    document.fonts.ready.then(() => {
+        if(compliments.length === 0) {
+            for(let i = 0; i < 32; i++) {
+              compliments.push(createCompliment(true));
+            }
+        }
+    });
 
     function drawCompliments() {
       compCtx.clearRect(0, 0, compCanvas.width, compCanvas.height);
@@ -124,12 +130,12 @@
     }
 
 
-    /* === 3. ТРЕХМЕРНАЯ СЦЕНА THREE.JS === */
+    /* === 3. THREE.JS СЦЕНА === */
     const container = document.getElementById('3d-container');
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, window.innerWidth < 600 ? 14 : 11);
+    camera.position.set(0, 0, window.innerWidth < 600 ? 15 : 11.5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -137,9 +143,7 @@
     container.appendChild(renderer.domElement);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableRotate = false; 
-    controls.enableZoom = false;
-    controls.enablePan = false;
+    controls.enableRotate = false; controls.enableZoom = false; controls.enablePan = false;
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(-1000, -1000);
@@ -150,8 +154,7 @@
     );
     scene.add(targetPlane);
 
-    // Стабильная и объемная 3D-модель сердца
-    const particleCount = window.innerWidth < 600 ? 15000 : 25000;
+    const particleCount = window.innerWidth < 600 ? 14000 : 25000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);     
     const basePositions = new Float32Array(particleCount * 3); 
@@ -160,17 +163,17 @@
     for (let i = 0; i < particleCount; i++) {
       const phi = Math.PI * Math.random();
       const theta = Math.PI * 2 * Math.random();
-
       const sinPhi = Math.sin(phi);
+      
       const x = 16 * Math.pow(Math.sin(theta), 3) * sinPhi;
       const y = (13 * Math.cos(theta) - 5 * Math.cos(2 * theta) - 2 * Math.cos(3 * theta) - Math.cos(4 * theta)) * sinPhi;
       const z = 10 * Math.cos(phi); 
 
       const fillScale = 0.05 + Math.random() * 0.95;
       
-      let px = x * fillScale * 0.18;
-      let py = y * fillScale * 0.18 - 0.8; // Смещено вниз, чтобы освободить место под каллиграфию
-      let pz = z * fillScale * 0.18;
+      let px = x * fillScale * 0.17;
+      let py = y * fillScale * 0.17 - 1.4; 
+      let pz = z * fillScale * 0.17;
 
       const i3 = i * 3;
       positions[i3] = basePositions[i3] = px;
@@ -191,7 +194,7 @@
     
     const material = new THREE.PointsMaterial({
       color: new THREE.Color('#bd263c'), 
-      size: window.innerWidth < 600 ? 0.13 : 0.09,
+      size: window.innerWidth < 600 ? 0.12 : 0.09,
       transparent: true,
       blending: THREE.NormalBlending, 
       depthWrite: false,
@@ -202,33 +205,33 @@
     scene.add(particleSystem);
 
 
-    /* === 4. КРАСИВЫЙ РУКОПИСНЫЙ ТЕКСТ В ВЫСОКОМ РАЗРЕШЕНИИ === */
+    /* === 4. ГЛАВНЫЙ РУКОПИСНЫЙ ТЕКСТ === */
     const textCanvas = document.createElement('canvas');
-    // Увеличиваем текстуру в 2 раза для максимальной четкости завитков шрифта
     textCanvas.width = 2048;
-    textCanvas.height = 512;
+    textCanvas.height = 512; 
     const tCtx = textCanvas.getContext('2d');
 
-    // Настраиваем идеальный каллиграфический размер
-    tCtx.font = "116px 'Great Vibes', cursive";
-    tCtx.textAlign = "center";
-    tCtx.textBaseline = "middle";
-    
-    // Благородный бордово-красный цвет
-    tCtx.fillStyle = "#6b1824";
-    
-    // Элегантная мягкая тень под буквами для 3D-эффекта
-    tCtx.shadowColor = "rgba(189, 38, 60, 0.3)";
-    tCtx.shadowBlur = 12;
-    
-    // Отрисовываем текст в две строчки с хорошим отступом
-    tCtx.fillText("Я тебя очень сильно люблю", textCanvas.width / 2, 160);
-    tCtx.fillText("моя Катя", textCanvas.width / 2, 340);
+    document.fonts.ready.then(() => {
+        draw3DText();
+    });
+
+    function draw3DText() {
+        tCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+        tCtx.font = "95px 'Pacifico', cursive"; 
+        tCtx.textAlign = "center";
+        tCtx.textBaseline = "middle";
+        tCtx.fillStyle = "#6b1824";
+        
+        tCtx.shadowColor = "rgba(189, 38, 60, 0.35)";
+        tCtx.shadowBlur = 12;
+        
+        tCtx.fillText("Я тебя очень сильно люблю", textCanvas.width / 2, 160);
+        tCtx.fillText("моя Катя", textCanvas.width / 2, 330);
+        textTexture.needsUpdate = true;
+    }
 
     const textTexture = new THREE.CanvasTexture(textCanvas);
-    
-    // Анизотропная фильтрация, чтобы под углами шрифт не размывался на экранах телефонов
-    textTexture. anisotropy = 4; 
+    textTexture.anisotropy = 4; 
 
     const textMaterial = new THREE.MeshBasicMaterial({
       map: textTexture,
@@ -236,13 +239,18 @@
       side: THREE.DoubleSide
     });
     
-    // Размеры 3D-плоскости под пропорции холста 4:1 (2048x512)
-    const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 2.5), textMaterial);
-    textMesh.position.set(0, 4.0, 0); // Идеальное положение над статичным сердцем
+    const textMesh = new THREE.Mesh(new THREE.PlaneGeometry(12, 3.0), textMaterial);
+    
+    if (window.innerWidth < 600) {
+        textMesh.scale.set(0.72, 0.72, 0.72); 
+        textMesh.position.set(0, 3.6, 0);
+    } else {
+        textMesh.position.set(0, 3.9, 0);
+    }
     scene.add(textMesh);
 
 
-    /* === 5. ИНТЕРАКТИВ И ОБНОВЛЕНИЕ === */
+    /* === 5. ИНТЕРАКТИВ И АНИМАЦИЯ === */
     function updateMouse(x, y) {
       mouse.x = (x / window.innerWidth) * 2 - 1;
       mouse.y = -(y / window.innerHeight) * 2 + 1;
@@ -257,17 +265,16 @@
 
     function animate() {
       requestAnimationFrame(animate);
+      
+      // Отрисовываем комплименты только если они уже создались после загрузки шрифта
+      if(compliments.length > 0) {
+          drawCompliments();
+      }
 
-      // Отрисовка бэкграунда
-      drawCompliments();
-
-      // Физика отталкивания точек
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObject(targetPlane);
       let mouse3D = null;
-      if (intersects.length > 0) {
-        mouse3D = intersects[0].point;
-      }
+      if (intersects.length > 0) mouse3D = intersects[0].point;
 
       const posAttribute = geometry.attributes.position;
       const posArray = posAttribute.array;
@@ -284,7 +291,7 @@
         if (mouse3D) {
           const mdx = px - mouse3D.x, mdy = py - mouse3D.y, mdz = pz - mouse3D.z;
           const distSq = mdx*mdx + mdy*mdy + mdz*mdz;
-          const radiusSq = window.innerWidth < 600 ? 2.0 : 3.2;
+          const radiusSq = window.innerWidth < 600 ? 1.8 : 3.2;
 
           if (distSq < radiusSq) {
             const dist = Math.sqrt(distSq);
@@ -297,7 +304,6 @@
         }
 
         velocities[i3] *= 0.84; velocities[i3+1] *= 0.84; velocities[i3+2] *= 0.84;
-
         posArray[i3]   += velocities[i3];
         posArray[i3+1] += velocities[i3+1];
         posArray[i3+2] += velocities[i3+2];
@@ -313,8 +319,18 @@
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      camera.position.set(0, 0, window.innerWidth < 600 ? 14 : 11);
+      camera.position.set(0, 0, window.innerWidth < 600 ? 15 : 11.5);
+      
+      if (window.innerWidth < 600) {
+          textMesh.scale.set(0.72, 0.72, 0.72);
+          textMesh.position.set(0, 3.6, 0);
+      } else {
+          textMesh.scale.set(1, 1, 1);
+          textMesh.position.set(0, 3.9, 0);
+      }
+      
       renderer.setSize(window.innerWidth, window.innerHeight);
+      draw3DText();
     });
   </script>
 </body>
